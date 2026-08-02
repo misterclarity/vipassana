@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vipassana · 10-day sits in Europe, single room</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>🧘</text></svg>"
+    />
+  </head>
+  <body>
+    <header class="masthead">
+      <div class="masthead-inner">
+        <h1>10-day sits in Europe</h1>
+        <p class="lede">
+          Courses you can <strong>sit</strong> (not serve) as an <strong>old student</strong>, taught in
+          <strong>English</strong>, at European centres that describe <strong>single rooms</strong>.
+        </p>
+        <div class="masthead-meta">
+          <span id="freshness" class="muted">Loading…</span>
+          <button id="refresh" class="ghost-button" type="button">Refresh from dhamma.org</button>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <form id="filters" class="filters" aria-label="Filters">
+        <div class="field">
+          <label for="f-accommodation">Sleeping arrangement</label>
+          <select id="f-accommodation" name="accommodation">
+            <option value="single-available" selected>Single room available</option>
+            <option value="single-only">Single rooms only (no shared)</option>
+            <option value="any">Any accommodation</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="f-language">Language</label>
+          <select id="f-language" name="language">
+            <option value="English" selected>English</option>
+            <option value="any">Any language</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="f-type">Course</label>
+          <select id="f-type" name="courseType">
+            <option value="10-day" selected>10-day</option>
+            <option value="satipatthana">Satipaṭṭhāna Sutta</option>
+            <option value="short">Short (1–3 day)</option>
+            <option value="long">Long (20 day and up)</option>
+            <option value="any">Any course</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="f-from">From</label>
+          <input id="f-from" name="from" type="date" />
+        </div>
+
+        <div class="field">
+          <label for="f-to">Until</label>
+          <input id="f-to" name="to" type="date" />
+        </div>
+
+        <div class="field">
+          <label for="f-country">Country</label>
+          <select id="f-country" name="country">
+            <option value="">All countries</option>
+          </select>
+        </div>
+
+        <div class="field checkbox-field">
+          <label><input id="f-open" name="openOnly" type="checkbox" /> Hide full &amp; closed</label>
+        </div>
+      </form>
+
+      <section id="summary" class="summary" aria-live="polite"></section>
+
+      <section id="results" class="results" aria-busy="true">
+        <div class="placeholder">
+          <div class="spinner" aria-hidden="true"></div>
+          <p>Reading course schedules from dhamma.org…</p>
+          <p class="muted small">
+            The first run fetches every European centre and can take 30–60 seconds. Results are cached
+            for 6 hours afterwards.
+          </p>
+        </div>
+      </section>
+
+      <section id="centres" class="centres"></section>
+
+      <section class="notes">
+        <h2>Before you book</h2>
+        <ul>
+          <li>
+            <strong>A single room is never fully guaranteed.</strong> Centres allocate rooms per course
+            and per gender, and a full course can mean sharing. Every claim below is quoted from the
+            centre's own page with a link — read the quote, then confirm with the centre when you apply.
+          </li>
+          <li>
+            <strong>10-day courses are open to old students.</strong> They are the standard course old
+            students re-sit; apply through the old-student application on the centre's page. Service
+            periods are excluded here, since you asked to sit.
+          </li>
+          <li>
+            <strong>Language shown in grey is inferred</strong> from the centre's usual teaching language
+            because the schedule row did not name one. Courses at centres outside the UK are commonly
+            taught in the local language with English translation available — verify before applying.
+          </li>
+          <li>
+            Non-centre courses (rented venues in countries without a centre) are not listed: they are not
+            published as per-centre schedules, and they almost always use shared accommodation. Check the
+            <a href="https://www.dhamma.org/en/courses/search" rel="noreferrer noopener" target="_blank">official course search</a>
+            if you want those too.
+          </li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      <p class="muted small">
+        Data read live from
+        <a href="https://www.dhamma.org/en/index" rel="noreferrer noopener" target="_blank">dhamma.org</a>
+        and the centres' own sites. This is an unofficial personal tool — dhamma.org is the source of truth.
+      </p>
+    </footer>
+
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "name": "vipassana-course-finder",
+  "version": "1.0.0",
+  "description": "Finds 10-day Vipassana sitting courses in Europe, in English, at centres with single rooms.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.mjs",
+    "refresh": "node scripts/refresh.mjs",
+    "doctor": "node scripts/doctor.mjs",
+    "test": "node --test \"test/**/*.test.mjs\""
+  },
+  "license": "MIT",
+  "private": true
+}
