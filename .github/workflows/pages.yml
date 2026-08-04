@@ -1,0 +1,60 @@
+name: Publish to GitHub Pages
+
+# The published site is a snapshot: GitHub Pages serves files, not Node, and
+# dhamma.org sends no CORS headers, so the browser cannot read it directly. The
+# data is fetched here at build time and shipped as data.json.
+#
+# The schedule keeps that snapshot from going stale. Course schedules are
+# published months ahead and change slowly, so once a day is plenty — and
+# dhamma.org is run by volunteers, so more would be rude for no benefit.
+
+on:
+  push:
+    branches: [claude/vipassana-courses-finder-rg5cut]
+  schedule:
+    - cron: '17 5 * * *' # daily, 05:17 UTC (off the hour: cron is busiest on it)
+  workflow_dispatch: # lets you publish an update by hand
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never let a scheduled build and a pushed build deploy over each other.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # No dependencies to install — the app is deliberately dependency-free —
+      # so the tests are the only gate before publishing.
+      - name: Run tests
+        run: npm test
+
+      - name: Build static site
+        run: npm run build
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

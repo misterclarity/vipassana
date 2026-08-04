@@ -11,6 +11,26 @@ const TODAY = '2026-01-15';
 
 const loadFixture = (name) => readFile(path.join(FIXTURES, name), 'utf8');
 
+test('the 10-day entry requirement does not make every course a 10-day course', () => {
+  // Live row from Dhamma Mahī. It is a 1-Day sit; "10day" appears only in the
+  // eligibility note, and it was putting the course into 10-day search results.
+  assert.equal(
+    classifyCourseType('Apply* | 23 Aug | 1-Day | Open | For old students (having completed one 10day course)'),
+    COURSE_TYPES.SHORT
+  );
+  assert.equal(
+    classifyCourseType('3-Day Course | old students (having completed one 10-day course)'),
+    COURSE_TYPES.SHORT
+  );
+  assert.equal(
+    classifyCourseType('Satipatthana Course | for old students who have completed a 10-day course'),
+    COURSE_TYPES.SATIPATTHANA
+  );
+  // A genuine 10-day course still classifies as one.
+  assert.equal(classifyCourseType('12 Aug - 23 Aug | 10-Day Course | Open'), COURSE_TYPES.TEN_DAY);
+  assert.equal(classifyCourseType('20-Day Course | old students who have completed a 10-day course'), COURSE_TYPES.LONG);
+});
+
 test('classifies the course types that appear on a schedule', () => {
   assert.equal(classifyCourseType('10-Day'), COURSE_TYPES.TEN_DAY);
   assert.equal(classifyCourseType('Ten Day Course'), COURSE_TYPES.TEN_DAY);

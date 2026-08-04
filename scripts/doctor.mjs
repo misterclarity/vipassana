@@ -35,9 +35,10 @@ for (const center of data.centers) {
   const scanned = accommodation.pagesScanned.filter((page) => page.hits > 0);
   if (accommodation.verdict === 'unknown') {
     problems += 1;
-    const tried = accommodation.attempts.map((attempt) => (attempt.ok ? '✓' : '✗')).join('');
-    console.log(`  ! rooms   no evidence found (tried ${accommodation.attempts.length} pages: ${tried})`);
-    console.log(`      add the right URL to accommodationUrls for "${center.id}" in src/centers.js`);
+    const reached = accommodation.attempts.filter((attempt) => attempt.ok).length;
+    console.log(`  ! rooms   no evidence on ${reached} page(s) read (${accommodation.attempts.length} tried)`);
+    console.log(`      the centre may simply not publish its room type — check by hand, then`);
+    console.log(`      set entryUrls for "${center.id}" in src/centers.js if the page exists`);
   } else {
     console.log(`  ✓ rooms   ${accommodation.verdict} — ${accommodation.evidence.length} quote(s) from ${scanned.length} page(s)`);
   }

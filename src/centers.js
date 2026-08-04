@@ -10,31 +10,27 @@
 // The list below covers the established centres; `npm run doctor` reports any
 // entry whose URLs no longer resolve, and adding a centre is just another object.
 
-/** Paths tried, in order, when hunting for a centre's accommodation description. */
-export const ACCOMMODATION_PATH_CANDIDATES = [
-  'accommodations/',
-  'accommodation/',
-  'what-to-expect/',
-  'the-center/',
-  'the-centre/',
-  'facilities/',
-  'course-information/',
-  '',
-];
-
-/** How many accommodation pages we are willing to fetch per centre. */
-export const MAX_ACCOMMODATION_FETCHES = 4;
+// `entry` below is *where to start reading*, not what the centre says.
+//
+// Only eight of these thirteen centres actually live at `<slug>.dhamma.org`; the
+// rest redirect to a shared country site (uk, fr, de, ru) where several centres
+// coexist. That matters for accuracy: starting Dhamma Dīpa and Dhamma Sukhakāri
+// from `uk.dhamma.org` would let each pick up the other's description, since the
+// two centres differ (`/centres/the-site/` vs `/suffolk-centre/the-site/`). Each
+// entry therefore points at the centre's *own* section, and src/discover.js
+// follows the site's navigation from there.
 
 const scheduleUrl = (slug) => `https://www.dhamma.org/en/schedules/sch${slug}`;
 const centreSite = (slug) => `https://${slug}.dhamma.org/`;
 
 function centre(config) {
   const { slug } = config;
+  const site = config.site ?? centreSite(slug);
   return {
     id: slug,
-    site: centreSite(slug),
+    site,
     scheduleUrls: [scheduleUrl(slug)],
-    accommodationUrls: null, // null => derive from site + ACCOMMODATION_PATH_CANDIDATES
+    entryUrls: config.entryUrls ?? [site],
     city: null,
     locationNote: null,
     capacity: null,
@@ -47,6 +43,7 @@ function centre(config) {
 export const CENTERS = [
   centre({
     slug: 'dipa',
+    site: 'https://uk.dhamma.org/herefordshire-centre/',
     name: 'Dhamma Dīpa',
     country: 'United Kingdom',
     countryCode: 'GB',
@@ -66,6 +63,7 @@ export const CENTERS = [
   }),
   centre({
     slug: 'sukhakari',
+    site: 'https://uk.dhamma.org/suffolk-centre/',
     name: 'Dhamma Sukhakari',
     country: 'United Kingdom',
     countryCode: 'GB',
@@ -74,6 +72,7 @@ export const CENTERS = [
   }),
   centre({
     slug: 'mahi',
+    site: 'https://fr.dhamma.org/dhamma-mahi-permanent-center/',
     name: 'Dhamma Mahī',
     country: 'France',
     countryCode: 'FR',
@@ -100,6 +99,7 @@ export const CENTERS = [
   }),
   centre({
     slug: 'dvara',
+    site: 'https://de.dhamma.org/de/meditationszentrum-vogtland/',
     name: 'Dhamma Dvāra',
     country: 'Germany',
     countryCode: 'DE',
@@ -152,6 +152,7 @@ export const CENTERS = [
   }),
   centre({
     slug: 'dullabha',
+    site: 'https://ru.dhamma.org/',
     name: 'Dhamma Dullabha',
     country: 'Russia',
     countryCode: 'RU',
@@ -159,12 +160,6 @@ export const CENTERS = [
     languages: ['Russian', 'English'],
   }),
 ];
-
-/** Accommodation pages to try for a centre, most specific first. */
-export function accommodationCandidates(center) {
-  if (center.accommodationUrls?.length) return center.accommodationUrls;
-  return ACCOMMODATION_PATH_CANDIDATES.map((path) => new URL(path, center.site).toString());
-}
 
 export function getCenter(id) {
   return CENTERS.find((center) => center.id === id) ?? null;

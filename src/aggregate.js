@@ -1,30 +1,25 @@
 // Pulls the whole picture together: schedules + accommodation, per centre.
 
-import { CENTERS, accommodationCandidates, MAX_ACCOMMODATION_FETCHES } from './centers.js';
+import { CENTERS } from './centers.js';
 import { fetchAll, fetchPage, DEFAULT_TTL_MS } from './fetcher.js';
 import { parseSchedule, dedupeCourses, COURSE_TYPES } from './parse-schedule.js';
-import { assessAccommodation, VERDICTS } from './parse-accommodation.js';
+import { assessAccommodation, scanAccommodationPage, VERDICTS } from './parse-accommodation.js';
+import { discoverAccommodationPages } from './discover.js';
 
 /**
- * Try a centre's candidate accommodation pages in order, stopping as soon as one
- * yields a usable verdict. Keeps the request count per centre in single digits.
+ * Follow a centre's own navigation until a page describes its rooms.
+ *
+ * Guessing URLs cannot work on these sites — they answer 200 for everything —
+ * so discovery reads the links instead, and stops at the first page that says
+ * something. See src/discover.js.
  */
 async function loadAccommodation(center, options) {
-  const candidates = accommodationCandidates(center).slice(0, MAX_ACCOMMODATION_FETCHES);
-  const pages = [];
-  const attempts = [];
-
-  for (const url of candidates) {
-    const page = await fetchPage(url, options);
-    attempts.push({ url, ok: page.ok, status: page.status, error: page.error });
-    if (!page.ok) continue;
-    pages.push({ url: page.finalUrl ?? url, html: page.html });
-
-    const assessment = assessAccommodation(pages);
-    if (assessment.verdict !== VERDICTS.UNKNOWN) {
-      return { ...assessment, attempts };
-    }
-  }
+  const { pages, attempts } = await discoverAccommodationPages(
+    center,
+    fetchPage,
+    (html, url) => scanAccommodationPage(html, url).evidence.length > 0,
+    options
+  );
 
   return { ...assessAccommodation(pages), attempts };
 }

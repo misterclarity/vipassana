@@ -16,6 +16,10 @@ export const VERDICTS = {
 const SINGLE_PATTERNS = [
   /\bsingle\s+rooms?\b/i,
   /\bsingle[-\s]occupancy\b/i,
+  // Centres often describe the room by its bathroom rather than by the word
+  // "room" — Dhamma Padhāna says "single en-suite accommodation".
+  /\bsingle\s+(en[-\s]?suite\s+)?(accommodation|accomodation|rooms?|units?|cells?|cabins?)\b/i,
+  /\bsingle\s+en[-\s]?suite\b/i,
   /\bindividual\s+rooms?\b/i,
   /\bprivate\s+rooms?\b/i,
   /\bown\s+(single\s+)?rooms?\b/i,
@@ -27,6 +31,13 @@ const SINGLE_PATTERNS = [
   /\bcamere?\s+singole?\b/i,                 // it
   /\b(e(e|é)npersoonskamers?)\b/i,           // nl
   /\bpokoje?\s+jednoosobow/i,                // pl
+  // Coordinated lists — "several single and double rooms" — where the noun is
+  // attached only to the last item, so "single" is never adjacent to "room".
+  // Both sides still match, which is exactly right: the verdict becomes "mixed".
+  /\bsingle[,\s]+(and\s+|or\s+)?(double|twin|triple|shared|multi)\b/i,
+  /\b(double|twin|triple|shared)[,\s]+(and\s+|or\s+)?single\s+rooms?\b/i,
+  /\beinzel-\s*(und|oder|,)/i,               // de: "Einzel- und Doppelzimmer"
+  /\bchambres?\s+(individuelles?|seules?)\s+(et|ou)\b/i, // fr
 ];
 
 const SHARED_PATTERNS = [
