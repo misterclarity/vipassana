@@ -109,9 +109,39 @@ test('every registered centre is in Europe and has usable URLs', () => {
   assert.ok(CENTERS.length >= 10);
   for (const center of CENTERS) {
     assert.ok(center.name && center.country, `${center.id} needs a name and country`);
-    assert.match(center.site, /^https:\/\/[a-z]+\.dhamma\.org\/$/);
+    // Not every centre lives at <slug>.dhamma.org: five redirect to a shared
+    // country site, so only the host is guaranteed to be under dhamma.org.
+    assert.match(center.site, /^https:\/\/[a-z.]+\.dhamma\.org\//);
     assert.ok(center.scheduleUrls.length > 0);
     for (const url of center.scheduleUrls) assert.match(url, /^https:\/\/www\.dhamma\.org\//);
+    assert.ok(center.entryUrls.length > 0, `${center.id} needs somewhere to start reading`);
   }
   assert.equal(new Set(CENTERS.map((center) => center.id)).size, CENTERS.length);
+});
+
+test('centres sharing a country site start from their own section, not the shared home', () => {
+  // Dhamma Dīpa and Dhamma Sukhakāri both live on uk.dhamma.org and describe
+  // their accommodation differently. Starting both at the site root would let
+  // whichever page was reached first speak for the other centre.
+  const byHost = new Map();
+  for (const center of CENTERS) {
+    for (const entry of center.entryUrls) {
+      const { hostname, pathname } = new URL(entry);
+      if (!byHost.has(hostname)) byHost.set(hostname, []);
+      byHost.get(hostname).push({ id: center.id, pathname });
+    }
+  }
+
+  for (const [hostname, entries] of byHost) {
+    if (entries.length < 2) continue;
+    const paths = entries.map((entry) => entry.pathname);
+    assert.equal(
+      new Set(paths).size,
+      paths.length,
+      `${hostname} is shared by ${entries.map((e) => e.id).join(', ')} — each needs a distinct entry path`
+    );
+    for (const entry of entries) {
+      assert.notEqual(entry.pathname, '/', `${entry.id} shares ${hostname}, so it cannot start at the site root`);
+    }
+  }
 });

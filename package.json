@@ -10,7 +10,8 @@
     "start": "node server.mjs",
     "refresh": "node scripts/refresh.mjs",
     "doctor": "node scripts/doctor.mjs",
-    "test": "node --test \"test/**/*.test.mjs\""
+    "test": "node --test \"test/**/*.test.mjs\"",
+    "build": "node scripts/build-static.mjs"
   },
   "license": "MIT",
   "private": true

@@ -28,6 +28,20 @@ const LANGUAGE_NAMES = [
 
 const HEADER_HINTS = /course\s*type|start\s*date|end\s*date|\bdates?\b|language|availability|status|register|apply/i;
 
+// Rows state who may apply as well as what the course is, and the entry
+// requirement is almost always "a completed 10-day course". Left in place, that
+// phrase turns every eligibility note into a 10-day match — a real 1-Day sit at
+// Dhamma Mahī reading "1-Day … For old students (having completed one 10day
+// course)" was being listed as a 10-day course. The requirement describes the
+// student's past, not the course being offered, so it is removed before
+// classifying.
+const PREREQUISITE_CLAUSE =
+  /\(([^)]*\b(complet|absolvier|suivi|terminado|frequentato|voltooid|uko(n|ń)cz)\w*[^)]*)\)|\b(having|who\s+have|after|must\s+have|already)\s+(completed|attended|sat|done)\b[^.,;|]*/gi;
+
+export function stripPrerequisites(text) {
+  return String(text ?? '').replace(PREREQUISITE_CLAUSE, ' ');
+}
+
 /**
  * Classify a row's course type.
  *
@@ -35,7 +49,7 @@ const HEADER_HINTS = /course\s*type|start\s*date|end\s*date|\bdates?\b|language|
  * the 10-day course they attach to, so they are matched first.
  */
 export function classifyCourseType(text) {
-  const value = String(text ?? '');
+  const value = stripPrerequisites(text);
   if (/\b(children|teenager|teen[' ]?s|youth)\b/i.test(value)) return COURSE_TYPES.CHILDREN;
   if (/\b(service\s*period|dhamma\s*service|server[s']?\s*course|work\s*period|volunteer)\b/i.test(value)) {
     return COURSE_TYPES.SERVICE;

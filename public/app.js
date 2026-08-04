@@ -261,17 +261,41 @@ function populateCountries() {
   }
 }
 
+// Served two ways: by server.mjs, which fetches dhamma.org on demand, or as a
+// static site (GitHub Pages) with no server at all. In the second case there is
+// no /api/data and no live refresh — dhamma.org sends no CORS headers, so a
+// browser cannot read it directly — and the page falls back to the snapshot
+// built at deploy time.
+let staticMode = false;
+
+async function fetchDataset(forceRefresh) {
+  if (!staticMode) {
+    try {
+      const response = await fetch(`/api/data${forceRefresh ? '?refresh=1' : ''}`);
+      if (response.ok) return response;
+      if (response.status !== 404) throw new Error(`Server responded ${response.status}`);
+    } catch {
+      // No API here; fall through to the snapshot.
+    }
+  }
+
+  const snapshot = await fetch('./data.json', { cache: 'no-cache' });
+  if (!snapshot.ok) throw new Error(`Server responded ${snapshot.status}`);
+  staticMode = true;
+  return snapshot;
+}
+
 async function load({ forceRefresh = false } = {}) {
   elements.refresh.disabled = true;
   elements.freshness.textContent = forceRefresh ? 'Refreshing from dhamma.org…' : 'Loading…';
   try {
-    const response = await fetch(`/api/data${forceRefresh ? '?refresh=1' : ''}`);
-    if (!response.ok) throw new Error(`Server responded ${response.status}`);
+    const response = await fetchDataset(forceRefresh);
     const wasEmpty = dataset === null;
     dataset = await response.json();
     if (wasEmpty) populateCountries();
     const generated = new Date(dataset.generatedAt);
-    elements.freshness.textContent = `Read ${generated.toLocaleString()} · ${dataset.courses.length} listings from ${dataset.centers.length} centres`;
+    const read = staticMode ? 'Snapshot taken' : 'Read';
+    elements.freshness.textContent = `${read} ${generated.toLocaleString()} · ${dataset.courses.length} listings from ${dataset.centers.length} centres`;
     render();
   } catch (error) {
     elements.results.setAttribute('aria-busy', 'false');
@@ -284,7 +308,14 @@ async function load({ forceRefresh = false } = {}) {
     );
     elements.freshness.textContent = 'Load failed';
   } finally {
-    elements.refresh.disabled = false;
+    // A static deployment has nothing to refresh against, so the button says so
+    // rather than failing silently when pressed.
+    if (staticMode) {
+      elements.refresh.disabled = true;
+      elements.refresh.title = 'This is a published snapshot — run the app locally to re-read dhamma.org';
+    } else {
+      elements.refresh.disabled = false;
+    }
   }
 }
 
