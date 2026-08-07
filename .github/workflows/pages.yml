@@ -26,19 +26,34 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Run on the oldest supported Node as well as the current one. The README
+  # promises Node 20+, and the first version of this workflow shipped a test
+  # script that only worked on Node 22+ — green locally, broken in CI. Testing
+  # the documented floor is what catches that.
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: ['20', '24']
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      # Nothing to install — the app is deliberately dependency-free.
+      - run: npm test
+
   build:
+    needs: test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
-          node-version: '20'
-
-      # No dependencies to install — the app is deliberately dependency-free —
-      # so the tests are the only gate before publishing.
-      - name: Run tests
-        run: npm test
+          node-version: '24'
 
       - name: Build static site
         run: npm run build
