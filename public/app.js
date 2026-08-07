@@ -271,7 +271,7 @@ let staticMode = false;
 async function fetchDataset(forceRefresh) {
   if (!staticMode) {
     try {
-      const response = await fetch(`/api/data${forceRefresh ? '?refresh=1' : ''}`);
+      const response = await fetch(`./api/data${forceRefresh ? '?refresh=1' : ''}`);
       if (response.ok) return response;
       if (response.status !== 404) throw new Error(`Server responded ${response.status}`);
     } catch {
